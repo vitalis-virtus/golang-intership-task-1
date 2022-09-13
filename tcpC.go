@@ -42,7 +42,7 @@ func main() {
 
 		// we get text message, but now we ignore error
 		text, _ := reader.ReadString('\n')
-		fmt.Println("text: ", text)
+		//fmt.Println("text: ", text)
 
 		// we sent text message to the TCP server over the network using Fprintf()
 		fmt.Fprintf(c, text+"\n")
