@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	arguments := os.Args
+	arguments := os.Args //
 	if len(arguments) == 1 {
 		fmt.Println("Please provide port number")
 		return
