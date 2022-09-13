@@ -1,4 +1,4 @@
-package main
+package main // create tcp client
 
 import (
 	"bufio"
@@ -38,18 +38,17 @@ func main() {
 		// os.Stdin allows to read data from the console
 		// we create new i/o buffer reader
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print(">> ")
+		fmt.Print("CLIENT--> ")
 
 		// we get text message, but now we ignore error
 		text, _ := reader.ReadString('\n')
-		fmt.Println("text: ", text)
 
 		// we sent text message to the TCP server over the network using Fprintf()
 		fmt.Fprintf(c, text+"\n")
 
 		// we get server response message
 		message, _ := bufio.NewReader(c).ReadString('\n')
-		fmt.Print("->: " + message)
+		fmt.Print("SERVER-->: " + message)
 
 		// we terminate when user send STOP command to the tcp server
 		if strings.TrimSpace(string(text)) == "STOP" {
