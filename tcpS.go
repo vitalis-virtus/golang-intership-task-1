@@ -17,10 +17,10 @@ func main() {
 		return
 	}
 
-	PORT := ":" + arguments[1]
+	port := ":" + arguments[1]
 
 	// func net.Listen is listen to connection
-	l, err := net.Listen("tcp", PORT)
+	l, err := net.Listen("tcp", port)
 	if err != nil {
 		fmt.Println(err)
 		return
