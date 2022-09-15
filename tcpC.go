@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 func main() {
@@ -21,20 +23,33 @@ func main() {
 	}
 
 	// we save port in CONNECT variable
-	CONNECT := arguments[1]
-	//fmt.Println("CONNECT:", CONNECT)
+	connect := arguments[1]
 
 	// we implement of the TCP client and connect it to desired TCP server
-	c, err := net.Dial("tcp", CONNECT)
+	c, err := net.Dial("tcp", connect)
+
 	// checking for error
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	defer c.Close()
+
+	quitChan := make(chan os.Signal, 1)
+	signal.Notify(quitChan, os.Interrupt, os.Kill, syscall.SIGTERM)
+
 	// we create for loop to read users input from command line
 	// and terminate when user send STOP command to the tcp server
 	for {
+		select {
+		case <-quitChan:
+			fmt.Println("Stopped by command ctrl+c")
+			c.Close()
+			return
+		default:
+		}
+
 		// os.Stdin allows to read data from the console
 		// we create new i/o buffer reader
 		reader := bufio.NewReader(os.Stdin)
@@ -51,9 +66,10 @@ func main() {
 		fmt.Print("SERVER-->: " + message)
 
 		// we terminate when user send STOP command to the tcp server
-		if strings.TrimSpace(string(text)) == "STOP" {
+		if strings.TrimSpace(text) == "STOP" {
 			fmt.Println("TCP client exiting...")
 			return
 		}
+
 	}
 }
