@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -27,17 +30,47 @@ func main() {
 	}
 
 	//  successful call to Accept() means that the TCP server can begin to interact with TCP clients
-	c, err := l.Accept() // connection
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
-	// we close listening when main func completed her work
+// we close listening when main func completed her work
 	defer l.Close()
 
+	quitChan := make(chan os.Signal, 1)
+	signal.Notify(quitChan, os.Interrupt, os.Kill, syscall.SIGTERM)
+	wg := sync.WaitGroup{}
+
 	for {
-		reader := bufio.NewReader(c)
+		select {
+		case <-quitChan:
+			fmt.Println("Stopped by command ctrl+c")
+			l.Close()
+			wg.Wait()
+			return
+		default:
+		}
+
+		c, err := l.Accept() // connection
+		if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+			continue
+		}
+
+		if err != nil {
+			continue
+		}
+
+		wg.Add(1)
+		go func() {
+			wg.Done()
+			handleConnection(c)
+		}()
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	fmt.Println("connected...")
+	for {
+
+		reader := bufio.NewReader(conn)
+
 		netData, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
@@ -59,19 +92,22 @@ func main() {
 		case "TIME":
 			t := time.Now()
 			myTime := t.Format("2006-01-02 15:04:05 Monday") + "\n"
-			c.Write([]byte(myTime))
+
+      conn.Write([]byte(myTime))
 
 			// returns length of passed data
 		case "LENGTH":
 			length := strconv.Itoa(len(data)) + "\n"
-			c.Write([]byte(length))
+			conn.Write([]byte(length))
 
 			// we entered unknown command
 		default:
-			c.Write([]byte("unknown command\n"))
+			conn.Write([]byte("unknown command\n"))
+
 		}
 
 		fmt.Print("-> ", string(netData))
 	}
-
+  
+	conn.Close()
 }
