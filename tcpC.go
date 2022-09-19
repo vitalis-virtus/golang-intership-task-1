@@ -49,7 +49,7 @@ func main() {
 			return
 		default:
 		}
-
+    
 		// os.Stdin allows to read data from the console
 		// we create new i/o buffer reader
 		reader := bufio.NewReader(os.Stdin)
@@ -70,6 +70,5 @@ func main() {
 			fmt.Println("TCP client exiting...")
 			return
 		}
-
 	}
 }

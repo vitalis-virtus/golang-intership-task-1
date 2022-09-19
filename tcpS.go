@@ -31,7 +31,7 @@ func main() {
 
 	//  successful call to Accept() means that the TCP server can begin to interact with TCP clients
 
-	// we close listening when main func completed her work
+// we close listening when main func completed her work
 	defer l.Close()
 
 	quitChan := make(chan os.Signal, 1)
@@ -70,6 +70,7 @@ func handleConnection(conn net.Conn) {
 	for {
 
 		reader := bufio.NewReader(conn)
+
 		netData, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
@@ -91,7 +92,8 @@ func handleConnection(conn net.Conn) {
 		case "TIME":
 			t := time.Now()
 			myTime := t.Format("2006-01-02 15:04:05 Monday") + "\n"
-			conn.Write([]byte(myTime))
+
+      conn.Write([]byte(myTime))
 
 			// returns length of passed data
 		case "LENGTH":
@@ -101,10 +103,11 @@ func handleConnection(conn net.Conn) {
 			// we entered unknown command
 		default:
 			conn.Write([]byte("unknown command\n"))
+
 		}
 
 		fmt.Print("-> ", string(netData))
 	}
+  
 	conn.Close()
-
 }
